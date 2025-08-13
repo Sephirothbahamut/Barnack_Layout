@@ -7,37 +7,37 @@
 
 namespace barnack::layout::core
 	{
-	struct object_in_region_actions_t
-		{
-		/// <summary> Whether this UI element will be in the vector of items the mouse is over. </summary>
-		bool self{false};
-		/// <summary> Whether this UI element will prevent block the mouse-over visit tree from adding its children to the list. </summary>
-		bool block{false};
-		};
-
-	struct object
-		{
-		virtual object_in_region_actions_t object_in_region_actions() noexcept { return {}; }
-		};
-
-	using objects_refs = std::vector<std::reference_wrapper<object>>;
-	struct objects_in_region_t
-		{
-		core::objects_refs objects;
-		bool should_continue;
-		};
+	//struct object_in_region_actions_t
+	//	{
+	//	/// <summary> Whether this UI element will be in the vector of items the mouse is over. </summary>
+	//	bool self{false};
+	//	/// <summary> Whether this UI element will prevent block the mouse-over visit tree from adding its children to the list. </summary>
+	//	bool block{false};
+	//	};
+	//
+	//struct object
+	//	{
+	//	virtual object_in_region_actions_t object_in_region_actions() noexcept { return {}; }
+	//	};
+	//
+	//using objects_refs = std::vector<std::reference_wrapper<object>>;
+	//struct objects_in_region_t
+	//	{
+	//	core::objects_refs objects;
+	//	bool should_continue;
+	//	};
 
 	class element
 		{
 		public:
-			utils::observer_ptr<core::object> object_ptr;
+			//utils::observer_ptr<core::object> object_ptr;
 			utils::math::rect<float> rect{0.f, 0.f, 0.f, 0.f};
 
-			virtual core::objects_refs objects_in_region(const utils::math::vec2f& position) noexcept
-				{
-				const auto ret{object_in_region(position).objects};
-				return ret;
-				}
+			//virtual core::objects_refs objects_in_region(const utils::math::vec2f& position) noexcept
+			//	{
+			//	const auto ret{object_in_region(position).objects};
+			//	return ret;
+			//	}
 
 			void resize_checked(const utils::math::vec2f& size)
 				{
@@ -100,20 +100,28 @@ namespace barnack::layout::core
 				callback(*this);
 				}
 
+			virtual void traverse(const utils::math::vec2f& coords, const std::function<void(const element& element)>& callback) const noexcept
+				{
+				if (rect.contains(coords))
+					{
+					callback(*this);
+					}
+				}
+
 
 		protected:
-			objects_in_region_t object_in_region(const utils::math::vec2f& position) noexcept
-				{
-				if (rect.contains(position))
-					{
-					if (object_ptr)
-						{
-						const auto actions{object_ptr->object_in_region_actions()};
-						return {actions.self ? core::objects_refs{*object_ptr} : core::objects_refs{}, !actions.block};
-						}
-					}
-				return {{}, true};
-				}
+			//objects_in_region_t object_in_region(const utils::math::vec2f& position) noexcept
+			//	{
+			//	if (rect.contains(position))
+			//		{
+			//		if (object_ptr)
+			//			{
+			//			const auto actions{object_ptr->object_in_region_actions()};
+			//			return {actions.self ? core::objects_refs{*object_ptr} : core::objects_refs{}, !actions.block};
+			//			}
+			//		}
+			//	return {{}, true};
+			//	}
 
 			virtual utils::math::vec2f evaluate_size_min() const noexcept { return {  0.f,   0.f}; }
 			virtual utils::math::vec2f evaluate_size_max() const noexcept { return {utils::math::constants::finf, utils::math::constants::finf}; }
@@ -166,75 +174,73 @@ namespace barnack::layout::core
 	class owner : public element
 		{
 		public:
-			virtual void push(std::unique_ptr<element>&& element) = 0;
+			virtual void push(std::unique_ptr<element>&& element_ptr) = 0;
 		};
 
 	class wrapper : public owner
 		{
 		public:
-			virtual core::objects_refs objects_in_region(const utils::math::vec2f& position) noexcept override
-				{
-				auto object_in_region{element::object_in_region(position)};
-				if (object_in_region.should_continue)
-					{
-					const auto tmp{element->objects_in_region(position)};
-					object_in_region.objects.insert(object_in_region.objects.end(), tmp.begin(), tmp.end());
-					}
-				return object_in_region.objects;
-				}
+			//virtual core::objects_refs objects_in_region(const utils::math::vec2f& position) noexcept override
+			//	{
+			//	auto object_in_region{element::object_in_region(position)};
+			//	if (object_in_region.should_continue)
+			//		{
+			//		const auto tmp{element_ptr->objects_in_region(position)};
+			//		object_in_region.objects.insert(object_in_region.objects.end(), tmp.begin(), tmp.end());
+			//		}
+			//	return object_in_region.objects;
+			//	}
 
 			template <typename T, typename ...Args>
 			T& emplace(Args... args) noexcept 
 				{ 
 				std  ::  unique_ptr<T> tmp{std::make_unique<T>(std::forward<Args>(args)...)};
 				utils::observer_ptr<T> ptr{tmp.get()};
-				element = std::move(tmp);
+				element_ptr = std::move(tmp);
 				return *ptr;
 				}
 
-			virtual void push(std::unique_ptr<element>&& element) noexcept final override { this->element = std::move(element); }
+			virtual void push(std::unique_ptr<element>&& element_ptr) noexcept final override { this->element_ptr = std::move(element_ptr); }
 
-			virtual void traverse(const std::function<void(const element& element)>& callback) const noexcept
+			virtual void traverse(const std::function<void(const element& element_ptr)>& callback) const noexcept
 				{
 				callback(*this);
-				if (element)
+				if (element_ptr)
 					{
-					element->traverse(callback);
+					element_ptr->traverse(callback);
+					}
+				}
+
+			virtual void traverse(const utils::math::vec2f& coords, const std::function<void(const element& element)>& callback) const noexcept
+				{
+				if (rect.contains(coords))
+					{
+					callback(*this);
+					element_ptr->traverse(coords, callback);
 					}
 				}
 
 		protected:
-			std::unique_ptr<element> element;
+			std::unique_ptr<element> element_ptr;
 		};
 
 	class container : public owner
 		{
 		public:
-			virtual core::objects_refs objects_in_region(const utils::math::vec2f& position) noexcept override
-				{
-				auto object_in_region{element::object_in_region(position)};
-				if (object_in_region.should_continue)
-					{
-					for (auto& element_ptr : elements)
-						{
-						auto& element = *element_ptr;
-						const auto tmp{element.objects_in_region(position)};
-						object_in_region.objects.insert(object_in_region.objects.end(), tmp.begin(), tmp.end());
-						}
-					}
-				return object_in_region.objects;
-				}
-
-			template <typename T, typename ...Args>
-			T& emplace(Args... args) noexcept
-				{
-				std::unique_ptr<T> tmp{std::make_unique<T>(std::forward<Args>(args)...)};
-				utils::observer_ptr<T> ptr{tmp.get()};
-				elements.push_back(std::move(tmp));
-				return *ptr;
-				}
-
-			virtual void push(std::unique_ptr<element>&& element) noexcept final override { this->elements.push_back(std::move(element)); }
+			//virtual core::objects_refs objects_in_region(const utils::math::vec2f& position) noexcept override
+			//	{
+			//	auto object_in_region{element::object_in_region(position)};
+			//	if (object_in_region.should_continue)
+			//		{
+			//		for (auto& element_ptr : elements)
+			//			{
+			//			auto& element = *element_ptr;
+			//			const auto tmp{element.objects_in_region(position)};
+			//			object_in_region.objects.insert(object_in_region.objects.end(), tmp.begin(), tmp.end());
+			//			}
+			//		}
+			//	return object_in_region.objects;
+			//	}
 
 			virtual void traverse(const std::function<void(const element& element)>& callback) const noexcept
 				{
@@ -247,6 +253,33 @@ namespace barnack::layout::core
 						}
 					}
 				}
+
+
+			virtual void traverse(const utils::math::vec2f& coords, const std::function<void(const element& element)>& callback) const noexcept
+				{
+				if (rect.contains(coords))
+					{
+					callback(*this);
+					for (const auto& element : elements)
+						{
+						if (element)
+							{
+							element->traverse(coords, callback);
+							}
+						}
+					}
+				}
+
+			template <typename T, typename ...Args>
+			T& emplace(Args... args) noexcept
+				{
+				std::unique_ptr<T> tmp{std::make_unique<T>(std::forward<Args>(args)...)};
+				utils::observer_ptr<T> ptr{tmp.get()};
+				elements.push_back(std::move(tmp));
+				return *ptr;
+				}
+
+			virtual void push(std::unique_ptr<element>&& element) noexcept final override { this->elements.push_back(std::move(element)); }
 
 		protected:
 			std::vector<std::unique_ptr<element>> elements;

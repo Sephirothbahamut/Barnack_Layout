@@ -65,20 +65,17 @@ namespace barnack::layout::containers
 			{
 			core::element::reposition(position);
 
-			float x{0};
+			float delta_x{0};
 			for (auto& element_ptr : elements)
 				{
 				auto& element{*element_ptr};
-				float y{0};
-				switch (alignment)
-					{
-					case utils::alignment::vertical::top:    y = 0                                          ; break;
-					case utils::alignment::vertical::middle: y = (rect.h() / 2.f) - (element.rect.h() / 2.f); break;
-					case utils::alignment::vertical::bottom: y =  rect.h()        -  element.rect.h()       ; break;
-					}
+				const float delta_y{layout::details::evaluate_element_position_for_alignment_based_container(rect, element.rect, alignment)};
 
-				element.reposition({rect.x() + x, rect.y() + y});
-				x += element_ptr->rect.width();
+				const utils::math::vec2f element_new_position{rect.x() + delta_x, rect.y() + delta_y};
+
+				element.reposition(element_new_position);
+
+				delta_x += element_ptr->rect.width();
 				}
 			};
 		};

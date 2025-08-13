@@ -34,8 +34,11 @@ namespace barnack::layout::containers
 			}
 		};
 
+
 	std::vector<std::pair<float, float>> calc_sizes(std::pair<float, float> available, std::vector<constraints_t>& constraints) noexcept
 		{
+		//First/a represents the size along the axis on which the container expands (vertical for vertical container)
+		//Second/b represents the size along the axis on which the container always has 1 element (horizontal for vertical container)
 		std::vector<std::pair<float, float>> results; results.resize(constraints.size());
 
 		// Remove the minimums from available space

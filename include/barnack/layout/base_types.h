@@ -153,4 +153,41 @@ namespace barnack::layout
 			utils::math::vec2f _prf{utils::math::constants::fnan, utils::math::constants::fnan}; //can be [_min, _max] or fnan
 		};
 #pragma endregion inner_types
+
+
+
+	namespace details
+		{
+		float evaluate_element_position_for_alignment_based_container
+			(
+			const utils::math::rect<float>& container_rect,
+			const utils::math::rect<float>& element_rect,
+			const utils::alignment::horizontal& alignment
+			)
+			{
+			switch (alignment)
+				{
+				case utils::alignment::horizontal::left:   return 0                                                    ;
+				case utils::alignment::horizontal::centre: return (container_rect.w() / 2.f) - (element_rect.w() / 2.f);
+				case utils::alignment::horizontal::right:  return  container_rect.w()        -  element_rect.w()       ;
+				}
+			std::unreachable();
+			}
+		float evaluate_element_position_for_alignment_based_container
+			(
+			const utils::math::rect<float>& container_rect,
+			const utils::math::rect<float>& element_rect,
+			const utils::alignment::vertical& alignment
+			)
+			{
+			float y{0};
+			switch (alignment)
+				{
+				case utils::alignment::vertical::top:    return 0                                                    ;
+				case utils::alignment::vertical::middle: return (container_rect.h() / 2.f) - (element_rect.h() / 2.f);
+				case utils::alignment::vertical::bottom: return  container_rect.h()        -  element_rect.h()       ;
+				}
+			std::unreachable();
+			}
+		}
 	}
