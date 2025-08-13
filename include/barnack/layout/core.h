@@ -68,8 +68,18 @@ namespace barnack::layout::core
 
 			custom_sizes_t sizes;
 
-			utils::math::vec2f get_size_min() const noexcept { const utils::math::vec2f tmp{get_cached_or_evaluate_size_min()}; return {std::max(sizes.min_x(), tmp.x()), std::max(sizes.min_y(), tmp.y())}; }
-			utils::math::vec2f get_size_max() const noexcept { const utils::math::vec2f tmp{get_cached_or_evaluate_size_max()}; return {std::min(sizes.max_x(), tmp.x()), std::min(sizes.max_y(), tmp.y())}; }
+			utils::math::vec2f get_size_min() const noexcept 
+				{
+				const utils::math::vec2f tmp{get_cached_or_evaluate_size_min()}; 
+				const utils::math::vec2f ret{std::max(sizes.min_x(), tmp.x()), std::max(sizes.min_y(), tmp.y())};
+				return ret;
+				}
+			utils::math::vec2f get_size_max() const noexcept 
+				{ 
+				const utils::math::vec2f tmp{get_cached_or_evaluate_size_max()}; 
+				const utils::math::vec2f ret{std::min(sizes.max_x(), tmp.x()), std::min(sizes.max_y(), tmp.y())};
+				return ret;
+				}
 			utils::math::vec2f get_size_prf() const noexcept 
 				{ 
 				utils::math::vec2f tmp{get_cached_or_evaluate_size_prf()};
@@ -106,7 +116,7 @@ namespace barnack::layout::core
 				}
 
 			virtual utils::math::vec2f evaluate_size_min() const noexcept { return {  0.f,   0.f}; }
-			virtual utils::math::vec2f evaluate_size_max() const noexcept { return {999.f, 999.f}; }
+			virtual utils::math::vec2f evaluate_size_max() const noexcept { return {utils::math::constants::finf, utils::math::constants::finf}; }
 			virtual utils::math::vec2f evaluate_size_prf() const noexcept
 				{
 				utils::math::vec2f min{get_size_min()};
@@ -123,9 +133,32 @@ namespace barnack::layout::core
 			mutable std::optional<utils::math::vec2f> cached_max_opt;
 			mutable std::optional<utils::math::vec2f> cached_prf_opt;
 
-			utils::math::vec2f get_cached_or_evaluate_size_min() const noexcept { if (cached_min_opt.has_value()) { return cached_min_opt.value();} cached_min_opt = evaluate_size_min(); return cached_min_opt.value(); }
-			utils::math::vec2f get_cached_or_evaluate_size_max() const noexcept { if (cached_max_opt.has_value()) { return cached_max_opt.value();} cached_max_opt = evaluate_size_min(); return cached_max_opt.value(); }
-			utils::math::vec2f get_cached_or_evaluate_size_prf() const noexcept { if (cached_prf_opt.has_value()) { return cached_prf_opt.value();} cached_prf_opt = evaluate_size_min(); return cached_prf_opt.value(); }
+			utils::math::vec2f get_cached_or_evaluate_size_min() const noexcept 
+				{
+				if (!cached_min_opt.has_value()) 
+					{
+					cached_min_opt = evaluate_size_min();
+					} 
+				return cached_min_opt.value(); 
+				}
+
+			utils::math::vec2f get_cached_or_evaluate_size_max() const noexcept 
+				{
+				if (!cached_max_opt.has_value()) 
+					{
+					cached_max_opt = evaluate_size_max();
+					} 
+				return cached_max_opt.value(); 
+				}
+
+			utils::math::vec2f get_cached_or_evaluate_size_prf() const noexcept 
+				{
+				if (!cached_prf_opt.has_value()) 
+					{
+					cached_prf_opt = evaluate_size_min();
+					} 
+				return cached_prf_opt.value(); 
+				}
 		};
 
 

@@ -59,6 +59,10 @@ namespace barnack::layout::containers
 				constraint.max_a = available.first;
 				constraint.prf_a = std::min(constraint.prf_a, constraint.max_a);
 				}
+			else if (constraint.prf_a == utils::math::constants::finf)
+				{
+				constraint.prf_a = std::min(constraint.prf_a, constraint.max_a);
+				}
 			mins_sum += constraint.min_a;
 			maxs_sum += constraint.max_a;
 			prfs_sum += constraint.prf_a;
