@@ -180,7 +180,6 @@ namespace barnack::layout
 			const utils::alignment::vertical& alignment
 			)
 			{
-			float y{0};
 			switch (alignment)
 				{
 				case utils::alignment::vertical::top:    return 0                                                    ;

@@ -4,7 +4,7 @@
 
 namespace barnack::layout::containers
 	{
-	struct Stack : public core::container
+	struct stack : public core::container
 		{
 		utils::alignment alignment{utils::alignment::create::top_left()};
 
@@ -49,7 +49,7 @@ namespace barnack::layout::containers
 			for (size_t i{0}; i < elements.size(); i++)
 				{
 				auto& element{*elements[i]};
-				element.resize(rect.size());
+				element.resize_checked(rect.size());
 				}
 			}
 		virtual void reposition(const utils::math::vec2f& position) noexcept override

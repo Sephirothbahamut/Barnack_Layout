@@ -19,17 +19,17 @@ namespace barnack::layout::containers
 
 		static constraints_t hor(const core::element& element)
 			{
-			utils::math::vec2f min{element.get_size_min()};
-			utils::math::vec2f prf{element.get_size_prf()};
-			utils::math::vec2f max{element.get_size_max()};
+			const utils::math::vec2f min{element.get_size_min()};
+			const utils::math::vec2f prf{element.get_size_prf()};
+			const utils::math::vec2f max{element.get_size_max()};
 			return {min.x(), prf.x(), max.x(), min.y(), prf.y(), max.y()};
 			}
 
 		static constraints_t ver(const core::element& element)
 			{
-			utils::math::vec2f min{element.get_size_min()};
-			utils::math::vec2f prf{element.get_size_prf()};
-			utils::math::vec2f max{element.get_size_max()};
+			const utils::math::vec2f min{element.get_size_min()};
+			const utils::math::vec2f prf{element.get_size_prf()};
+			const utils::math::vec2f max{element.get_size_max()};
 			return {min.y(), prf.y(), max.y(), min.x(), prf.x(), max.x()};
 			}
 		};

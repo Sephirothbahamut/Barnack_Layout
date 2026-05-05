@@ -174,7 +174,7 @@ namespace barnack::layout::core
 	class owner : public element
 		{
 		public:
-			virtual void push(std::unique_ptr<element>&& element_ptr) = 0;
+			virtual utils::observer_ptr<element> push(std::unique_ptr<element>&& element_ptr) = 0;
 		};
 
 	class wrapper : public owner
@@ -200,7 +200,7 @@ namespace barnack::layout::core
 				return *ptr;
 				}
 
-			virtual void push(std::unique_ptr<element>&& element_ptr) noexcept final override { this->element_ptr = std::move(element_ptr); }
+			virtual utils::observer_ptr<element> push(std::unique_ptr<element>&& element_ptr) noexcept final override { this->element_ptr = std::move(element_ptr); return this->element_ptr.get(); }
 
 			virtual void traverse(const std::function<void(const element& element_ptr)>& callback) const noexcept
 				{
@@ -279,7 +279,15 @@ namespace barnack::layout::core
 				return *ptr;
 				}
 
-			virtual void push(std::unique_ptr<element>&& element) noexcept final override { this->elements.push_back(std::move(element)); }
+			virtual utils::observer_ptr<element> push(std::unique_ptr<element>&& element) noexcept final override
+				{
+				if (element)
+					{
+					this->elements.push_back(std::move(element));
+					return this->elements.rbegin()->get();
+					}
+				return nullptr;
+				}
 
 		protected:
 			std::vector<std::unique_ptr<element>> elements;
