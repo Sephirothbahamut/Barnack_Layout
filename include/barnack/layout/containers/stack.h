@@ -2,43 +2,44 @@
 
 #include "common.h"
 
-namespace barnack::layout::containers
+namespace barnack::layout::container
 	{
-	struct stack : public core::container
+	struct stack : public details::with_alignment<utils::alignment>
 		{
-		utils::alignment alignment{utils::alignment::create::top_left()};
+		using parent_t = details::with_alignment<utils::alignment>;
+		using parent_t::with_alignment;
 
 		virtual utils::math::vec2f evaluate_size_min() const noexcept final override
 			{
 			utils::math::vec2f ret{0.f, 0.f};
-			for (const auto& element_ptr : elements)
+			for_each_child([&](const core::element& child)
 				{
-				utils::math::vec2f element_val{element_ptr->get_size_min()};
-				ret.x() = std::max(ret.x(), element_val.x());
-				ret.y() = std::max(ret.y(), element_val.y());
-				}
+				utils::math::vec2f child_val{child.get_size_min()};
+				ret.x() = std::max(ret.x(), child_val.x());
+				ret.y() = std::max(ret.y(), child_val.y());
+				});
 			return ret;
 			}
 		virtual utils::math::vec2f evaluate_size_prf() const noexcept final override
 			{
 			utils::math::vec2f ret{0.f, 0.f};
-			for (const auto& element_ptr : elements)
+			for_each_child([&](const core::element& child)
 				{
-				utils::math::vec2f element_val{element_ptr->get_size_prf()};
-				ret.x() = std::max(ret.x(), element_val.x());
-				ret.y() = std::max(ret.y(), element_val.y());
-				}
+				utils::math::vec2f child_val{child.get_size_prf()};
+				ret.x() = layout::details::max_nan_aware(ret.x(), child_val.x());
+				ret.y() = layout::details::max_nan_aware(ret.y(), child_val.y());
+				});
 			return ret;
 			}
 		virtual utils::math::vec2f evaluate_size_max() const noexcept final override
 			{
 			utils::math::vec2f ret{0.f, 0.f};
-			for (const auto& element_ptr : elements)
+			for_each_child([&](const core::element& child)
 				{
-				utils::math::vec2f element_val{element_ptr->get_size_max()};
-				ret.x() = std::max(ret.x(), element_val.x());
-				ret.y() = std::max(ret.y(), element_val.y());
-				}
+				utils::math::vec2f child_val{child.get_size_max()};
+				ret.x() = std::max(ret.x(), child_val.x());
+				ret.y() = std::max(ret.y(), child_val.y());
+				});
 			return ret;
 			}
 
@@ -46,37 +47,39 @@ namespace barnack::layout::containers
 			{
 			core::element::resize_checked(max_size);
 
-			for (size_t i{0}; i < elements.size(); i++)
+			for_each_child([&](core::element& child)
 				{
-				auto& element{*elements[i]};
-				element.resize_checked(rect.size());
-				}
+				child.resize_checked(rect_content.size());
+				});
 			}
-		virtual void reposition(const utils::math::vec2f& position) noexcept override
+
+		virtual void reposition(const utils::math::vec2f& position) noexcept final override
 			{
 			core::element::reposition(position);
 
-			for (auto& element_ptr : elements)
+			for_each_slot([&](slot_t& slot)
 				{
-				auto& element{*element_ptr};
+				auto& child_own{slot.child_own};
+				assert(child_own);
+				auto& child{*child_own};
 
 				float x{0};
-				switch (alignment.horizontal_alignment)
+				switch (slot.alignment.horizontal_alignment)
 					{
-					case utils::alignment::horizontal::left:   x = 0                                          ; break;
-					case utils::alignment::horizontal::centre: x = (rect.w() / 2.f) - (element.rect.w() / 2.f); break;
-					case utils::alignment::horizontal::right:  x =  rect.w()        -  element.rect.w()       ; break;
+					case utils::alignment::horizontal::left:   x = 0                                                        ; break;
+					case utils::alignment::horizontal::centre: x = (rect_content.w() / 2.f) - (child.rect_content.w() / 2.f); break;
+					case utils::alignment::horizontal::right:  x =  rect_content.w()        -  child.rect_content.w()       ; break;
 					}
 				float y{0};
-				switch (alignment.vertical_alignment)
+				switch (slot.alignment.vertical_alignment)
 					{
-					case utils::alignment::vertical::top:    y = 0                                          ; break;
-					case utils::alignment::vertical::middle: y = (rect.h() / 2.f) - (element.rect.h() / 2.f); break;
-					case utils::alignment::vertical::bottom: y =  rect.h()        -  element.rect.h()       ; break;
+					case utils::alignment::vertical::top:    y = 0                                                        ; break;
+					case utils::alignment::vertical::middle: y = (rect_content.h() / 2.f) - (child.rect_content.h() / 2.f); break;
+					case utils::alignment::vertical::bottom: y =  rect_content.h()        -  child.rect_content.h()       ; break;
 					}
 
-				element.reposition({rect.x() + x, rect.y() + y});
-				}
-			};
+				child.reposition({rect_content.x() + x, rect_content.y() + y});
+				});
+			}
 		};
 	}

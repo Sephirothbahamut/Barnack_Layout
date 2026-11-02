@@ -1,64 +1,50 @@
 #pragma once
 
-#include <utils/alignment.h>
+#include "common.h"
 
-#include "../core.h"
-
-namespace barnack::layout::wrappers
+namespace barnack::layout::wrapper
 	{
-	struct padding_values
-		{
-		float up{0};
-		float ll{0};
-		float dw{0};
-		float rr{0};
-		utils::math::vec2f tot() const noexcept { return {rr + ll, up + dw}; }
-		};
-
-	class padding : public core::wrapper, public padding_values
+	class spacing_fixed : public details::with_slot_t<core::slot>
 		{
 		public:
-			using init = padding_values;
-			padding(const init& init) : padding_values{init} {}
+			utils::math::rect_spacing<float> spacing;
 
-			virtual utils::math::vec2f evaluate_size_min() const noexcept final override { return element_ptr->get_size_min() + tot(); }
-			virtual utils::math::vec2f evaluate_size_prf() const noexcept final override { return element_ptr->get_size_prf() + tot(); }
-			virtual utils::math::vec2f evaluate_size_max() const noexcept final override { return element_ptr->get_size_max() + tot(); }
+			virtual utils::math::vec2f evaluate_size_min() const noexcept final override { return child().get_size_min() + spacing; }
+			virtual utils::math::vec2f evaluate_size_prf() const noexcept final override { return child().get_size_prf() + spacing; }
+			virtual utils::math::vec2f evaluate_size_max() const noexcept final override { return child().get_size_max() + spacing; }
 
 			virtual void resize(const utils::math::vec2f& max_size)  final override
 				{
 				core::element::resize_checked(max_size);
-				element_ptr->resize(rect.size() - tot());
+				child().resize(rect_content.size() - spacing);
 				}
 			virtual void reposition(utils::math::vec2f position) noexcept
 				{
 				core::element::reposition(position);
-				element_ptr->reposition(rect.position() + utils::math::vec2f{ll, up});
+				child().reposition(rect_content.position() + utils::math::vec2f{spacing.ll(), spacing.up()});
 				};
 		private:
 		};
 
-	class variable_padding : public core::wrapper
+	class spacing : public details::with_slot_t<core::slot>
 		{
 		public:
-			padding_values min;
-			padding_values prf;
-			padding_values max;
+			custom::spacing custom_spacing;
 
-			virtual utils::math::vec2f evaluate_size_min() const noexcept final override { return element_ptr->get_size_min() + min.tot(); }
-			virtual utils::math::vec2f evaluate_size_prf() const noexcept final override { return element_ptr->get_size_prf() + prf.tot(); }
-			virtual utils::math::vec2f evaluate_size_max() const noexcept final override { return element_ptr->get_size_max() + max.tot(); }
+			virtual utils::math::vec2f evaluate_size_min() const noexcept final override { return child().get_size_min() + custom_spacing.get_min(); }
+			virtual utils::math::vec2f evaluate_size_prf() const noexcept final override { return child().get_size_prf() + custom_spacing.get_prf(); }
+			virtual utils::math::vec2f evaluate_size_max() const noexcept final override { return child().get_size_max() + custom_spacing.get_max(); }
 
 			//TODO
 			virtual void resize(const utils::math::vec2f& max_size)  final override
 				{
 				core::element::resize_checked(max_size);
-				element_ptr->resize(rect.size() - min.tot());
+				child().resize(rect_content.size() - custom_spacing.get_min());
 				}
 			virtual void reposition(const utils::math::vec2f& position) noexcept override
 				{
 				core::element::reposition(position);
-				element_ptr->reposition(rect.position() + utils::math::vec2f{min.ll, min.up});
+				child().reposition(rect_content.position() + utils::math::vec2f{custom_spacing.ll.min(), custom_spacing.up.min()});
 				};
 
 		private:

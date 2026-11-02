@@ -2,43 +2,47 @@
 
 #include "common.h"
 
-namespace barnack::layout::containers
+namespace barnack::layout::container
 	{
-	struct vertical : public core::container
+	struct vertical : public details::with_alignment<utils::alignment::horizontal>
 		{
-		utils::alignment::horizontal alignment{utils::alignment::horizontal::left};
+		using parent_t = details::with_alignment<utils::alignment::horizontal>;
+		using parent_t::with_alignment;
 
 		virtual utils::math::vec2f evaluate_size_min() const noexcept final override
 			{
 			utils::math::vec2f ret{0.f, 0.f};
-			for (const auto& element_ptr : elements)
+			for_each_child([&](const core::element& child)
 				{
-				utils::math::vec2f element_val{element_ptr->get_size_min()};
-				ret.y() += element_val.y();
-				ret.x() = std::max(ret.x(), element_val.x());
-				}
+				utils::math::vec2f child_val{child.get_size_min()};
+				ret.y() += child_val.y();
+				ret.x() = std::max(ret.x(), child_val.x());
+				});
+
 			return ret;
 			}
 		virtual utils::math::vec2f evaluate_size_prf() const noexcept final override
 			{
-			utils::math::vec2f ret{0.f, 0.f};
-			for (const auto& element_ptr : elements)
+			utils::math::vec2f ret{utils::math::constants::fnan, utils::math::constants::fnan};
+			for_each_child([&](const core::element& child)
 				{
-				utils::math::vec2f element_val{element_ptr->get_size_prf()};
-				ret.y() += element_val.y();
-				ret.x() = std::max(ret.x(), element_val.x());
-				}
+				utils::math::vec2f child_val{child.get_size_prf()};
+				ret.y() = layout::details::add_nan_aware(ret.y(), child_val.y());
+				ret.x() = layout::details::max_nan_aware(ret.x(), child_val.x());
+				});
 			return ret;
 			}
 		virtual utils::math::vec2f evaluate_size_max() const noexcept final override
 			{
+			if (slots.empty()) { return {utils::math::constants::finf, utils::math::constants::finf}; }
+
 			utils::math::vec2f ret{0.f, 0.f};
-			for (const auto& element_ptr : elements)
+			for_each_child([&](const core::element& child)
 				{
-				utils::math::vec2f element_val{element_ptr->get_size_max()};
-				ret.y() += element_val.y();
-				ret.x() = std::max(ret.x(), element_val.x());
-				}
+				utils::math::vec2f child_val{child.get_size_max()};
+				ret.y() += child_val.y();
+				ret.x() = std::max(ret.x(), child_val.x());
+				});
 			return ret;
 			}
 
@@ -46,36 +50,43 @@ namespace barnack::layout::containers
 			{
 			core::element::resize_checked(max_size);
 
-			std::vector<constraints_t> constraints; constraints.reserve(elements.size());
-			for (const auto& element_ptr : elements)
+			std::vector<constraints_t> constraints(slots.size());
+			for (size_t i{0}; i < slots.size(); i++)
 				{
-				const auto& element{*element_ptr};
-				constraints.emplace_back(constraints_t::ver(element));
+				auto& child_own{slots[i].child_own};
+				assert(child_own);
+				auto& child{*child_own};
+				constraints[i] = constraints_t::ver(child);
 				}
-			auto sizes{calc_sizes({rect.height(), rect.width()}, constraints)};
+			auto sizes{details::calc_sizes({rect_content.height(), rect_content.width()}, constraints)};
 
-			for (size_t i{0}; i < elements.size(); i++)
+			for (size_t i{0}; i < slots.size(); i++)
 				{
-				auto& element{*elements[i]};
+				auto& child_own{slots[i].child_own};
+				assert(child_own);
+				auto& child{*child_own};
 				const auto& size{sizes[i]};
-				element.resize({size.second, size.first});
+				child.resize({size.second, size.first});
 				}
 			}
-		virtual void reposition(const utils::math::vec2f& position) noexcept override
+		virtual void reposition(const utils::math::vec2f& position) noexcept final override
 			{
 			core::element::reposition(position);
 
 			float delta_y{0};
-			for (auto& element_ptr : elements)
+			for_each_slot([&](const slot_t& slot)
 				{
-				auto& element{*element_ptr};
-				const float delta_x{layout::details::evaluate_element_position_for_alignment_based_container(rect, element.rect, alignment)};
+				auto& child_own{slot.child_own};
+				assert(child_own);
+				auto& child{*child_own};
 
-				const utils::math::vec2f element_new_position{rect.x() + delta_x, rect.y() + delta_y};
+				const float delta_x{layout::details::evaluate_element_position_for_alignment_based_container(rect_content, child.rect_content, slot.alignment)};
 
-				element.reposition(element_new_position);
-				delta_y += element_ptr->rect.height();
-				}
+				const utils::math::vec2f element_new_position{rect_content.x() + delta_x, rect_content.y() + delta_y};
+
+				child.reposition(element_new_position);
+				delta_y += child.rect_content.height();
+				});
 			};
 		};
 	}

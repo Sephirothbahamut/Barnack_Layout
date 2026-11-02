@@ -9,155 +9,236 @@
 
 namespace barnack::layout
 	{
-	class custom_sizes_t
+	namespace custom
 		{
-		public:
-			custom_sizes_t() = default;
-			custom_sizes_t(const utils::math::vec2f& _min, const utils::math::vec2f& _max)
-				{
-				if (_min.x() > _max.x() || _min.y() > _max.y()) { throw sizes_error; }
-				this->_min = _min;
-				this->_max = _max;
-				}
-			custom_sizes_t(const utils::math::vec2f& _min, const utils::math::vec2f& _prf, const utils::math::vec2f& _max)
-				{
-				if (_min.x() > _max.x() || _min.y() > _max.y() || _prf.x() < _min.x() || _prf.x() > _max.x() || _prf.y() < _min.y() || _prf.y() > _max.y()) { throw sizes_error; }
-				this->_min = _min;
-				this->_max = _max;
-				this->_prf = _prf;
-				}
-
-#pragma region Setters
-			void set_min(const utils::math::vec2f& val)
-				{
-				if ((!std::isnan(_prf.x()) && val.x() > _prf.x()) ||
-					(!std::isnan(_prf.y()) && val.y() > _prf.y()) ||
-					val.x() > _max.x() || val.y() > _max.y())
+		class size
+			{
+			public:
+				size() = default;
+				size(const float _min, const float _max)
 					{
-					throw sizes_error;
+					if (_min > _max) 
+						{
+						throw sizes_error; 
+						}
+					this->_min = _min;
+					this->_max = _max;
 					}
-				_min = val;
-				}
-			void set_prf(const utils::math::vec2f& val)
-				{
-				if (val.x() < _min.x() || val.x() > _max.x() || val.y() < _min.y() || val.y() > _max.y()) { throw sizes_error; }
-				_prf = val;
-				}
-			void set_max(const utils::math::vec2f& val)
-				{
-				if ((!std::isnan(_prf.x()) && val.x() < _prf.x()) ||
-					(!std::isnan(_prf.y()) && val.y() < _prf.y()) ||
-					val.x() < _min.x() || val.y() < _min.y())
+				size(const float _min, const float _prf, float _max)
 					{
-					throw sizes_error;
+					if ((_min > _max) || (_prf < _min) || (_prf > _max)) 
+						{
+						throw sizes_error; 
+						}
+					this->_min = _min;
+					this->_max = _max;
+					this->_prf = _prf;
 					}
-				_max = val;
-				}
-			void set_min_x(float x)
-				{
-				if (!std::isnan(_prf.x())) { if (x > _prf.x()) { throw sizes_error; } }
-				else { if (x > _max.x()) { throw sizes_error; } }
-				_min.x() = x;
-				}
-			void set_min_y(float y)
-				{
-				if (!std::isnan(_prf.y())) { if (y > _prf.y()) { throw sizes_error; } }
-				else { if (y > _max.y()) { throw sizes_error; } }
-				_min.y() = y;
-				}
-			void set_prf_x(float x)
-				{
-				if (x < _min.x() || x > _max.x()) { throw sizes_error; }
-				_prf.x() = x;
-				}
-			void set_prf_y(float y)
-				{
-				if (y < _min.y() || y > _max.y()) { throw sizes_error; }
-				_prf.y() = y;
-				}
-			void set_max_x(float x)
-				{
-				if (!std::isnan(_prf.x())) { if (x < _prf.x()) { throw sizes_error; } }
-				else { if (x < _min.x()) { throw sizes_error; } }
-				_max.x() = x;
-				}
-			void set_max_y(float y)
-				{
-				if (!std::isnan(_prf.y())) { if (y < _prf.y()) { throw sizes_error; } }
-				else { if (y < _min.y()) { throw sizes_error; } }
-				_max.y() = y;
-				}
-#pragma endregion Setters
-#pragma region Getters
-			utils::math::vec2f get_prf  () const noexcept { return _prf; }
-			utils::math::vec2f get_min  () const noexcept { return _min; }
-			utils::math::vec2f get_max  () const noexcept { return _max; }
-			float              get_min_x() const noexcept { return _min.x(); }
-			float              get_min_y() const noexcept { return _min.y(); }
-			float              get_prf_x() const noexcept { return _prf.x(); }
-			float              get_prf_y() const noexcept { return _prf.y(); }
-			float              get_max_x() const noexcept { return _max.x(); }
-			float              get_max_y() const noexcept { return _max.y(); }
-#pragma endregion Getters
 
-#pragma region Properties
-				
-			auto min  () const noexcept { return get_min  (); }
-			auto prf  () const noexcept { return get_prf  (); }
-			auto max  () const noexcept { return get_max  (); }
+				/// <summary> Must be [0.f, max()]</summary>
+				void set_min(const float val)
+					{
+					if ((!std::isnan(_prf) && val > _prf) || (val > _max))
+						{
+						throw sizes_error;
+						}
+					_min = val;
+					_max = std::max(_max, _min);
+					}
+				/// <summary> Must be [min(), max()]</summary>
+				void set_prf(const float val)
+					{
+					if (val < _min || val > _max) 
+						{
+						throw sizes_error; 
+						}
+					_prf = val;
+					}
+				/// <summary> Must be [min(), finf]</summary>
+				void set_max(const float& val)
+					{
+					if ((!std::isnan(_prf) && val < _prf) || (val < _min))
+						{
+						throw sizes_error;
+						}
+					_max = val;
+					_min = std::min(_min, _max);
+					}
 
-			auto min_x() const noexcept { return get_min_x(); }
-			auto min_y() const noexcept { return get_min_x(); }
-			auto prf_x() const noexcept { return get_prf_x(); }
-			auto prf_y() const noexcept { return get_prf_x(); }
-			auto max_x() const noexcept { return get_max_x(); }
-			auto max_y() const noexcept { return get_max_x(); }
+				float get_prf  () const noexcept { return _prf; }
+				float get_min  () const noexcept { return _min; }
+				float get_max  () const noexcept { return _max; }
 
-			auto proxy_min  ()       noexcept { return utils::oop::proxy<custom_sizes_t, false, utils::math::vec2f, &custom_sizes_t::set_min  , &custom_sizes_t::get_min  >{*this}; }
-			auto proxy_min  () const noexcept { return utils::oop::proxy<custom_sizes_t, true , utils::math::vec2f, &custom_sizes_t::set_min  , &custom_sizes_t::get_min  >{*this}; }
-			auto proxy_prf  ()       noexcept { return utils::oop::proxy<custom_sizes_t, false, utils::math::vec2f, &custom_sizes_t::set_prf  , &custom_sizes_t::get_prf  >{*this}; }
-			auto proxy_prf  () const noexcept { return utils::oop::proxy<custom_sizes_t, true , utils::math::vec2f, &custom_sizes_t::set_prf  , &custom_sizes_t::get_prf  >{*this}; }
-			auto proxy_max  ()       noexcept { return utils::oop::proxy<custom_sizes_t, false, utils::math::vec2f, &custom_sizes_t::set_max  , &custom_sizes_t::get_max  >{*this}; }
-			auto proxy_max  () const noexcept { return utils::oop::proxy<custom_sizes_t, true , utils::math::vec2f, &custom_sizes_t::set_max  , &custom_sizes_t::get_max  >{*this}; }
-			
-			auto proxy_min_x()       noexcept { return utils::oop::proxy<custom_sizes_t, false, float             , &custom_sizes_t::set_min_x, &custom_sizes_t::get_min_x>{*this}; }
-			auto proxy_min_x() const noexcept { return utils::oop::proxy<custom_sizes_t, true , float             , &custom_sizes_t::set_min_x, &custom_sizes_t::get_min_x>{*this}; }
-			auto proxy_min_y()       noexcept { return utils::oop::proxy<custom_sizes_t, false, float             , &custom_sizes_t::set_min_y, &custom_sizes_t::get_min_x>{*this}; }
-			auto proxy_min_y() const noexcept { return utils::oop::proxy<custom_sizes_t, true , float             , &custom_sizes_t::set_min_y, &custom_sizes_t::get_min_x>{*this}; }
-			auto proxy_prf_x()       noexcept { return utils::oop::proxy<custom_sizes_t, false, float             , &custom_sizes_t::set_prf_x, &custom_sizes_t::get_prf_x>{*this}; }
-			auto proxy_prf_x() const noexcept { return utils::oop::proxy<custom_sizes_t, true , float             , &custom_sizes_t::set_prf_x, &custom_sizes_t::get_prf_x>{*this}; }
-			auto proxy_prf_y()       noexcept { return utils::oop::proxy<custom_sizes_t, false, float             , &custom_sizes_t::set_prf_y, &custom_sizes_t::get_prf_x>{*this}; }
-			auto proxy_prf_y() const noexcept { return utils::oop::proxy<custom_sizes_t, true , float             , &custom_sizes_t::set_prf_y, &custom_sizes_t::get_prf_x>{*this}; }
-			auto proxy_max_x()       noexcept { return utils::oop::proxy<custom_sizes_t, false, float             , &custom_sizes_t::set_max_x, &custom_sizes_t::get_max_x>{*this}; }
-			auto proxy_max_x() const noexcept { return utils::oop::proxy<custom_sizes_t, true , float             , &custom_sizes_t::set_max_x, &custom_sizes_t::get_max_x>{*this}; }
-			auto proxy_max_y()       noexcept { return utils::oop::proxy<custom_sizes_t, false, float             , &custom_sizes_t::set_max_y, &custom_sizes_t::get_max_x>{*this}; }
-			auto proxy_max_y() const noexcept { return utils::oop::proxy<custom_sizes_t, true , float             , &custom_sizes_t::set_max_y, &custom_sizes_t::get_max_x>{*this}; }
+				auto min()       noexcept { return utils::oop::proxy<size, false, float, &size::set_min, &size::get_min>{*this}; }
+				auto min() const noexcept { return utils::oop::proxy<size, true , float, &size::set_min, &size::get_min>{*this}; }
+				auto prf()       noexcept { return utils::oop::proxy<size, false, float, &size::set_prf, &size::get_prf>{*this}; }
+				auto prf() const noexcept { return utils::oop::proxy<size, true , float, &size::set_prf, &size::get_prf>{*this}; }
+				auto max()       noexcept { return utils::oop::proxy<size, false, float, &size::set_max, &size::get_max>{*this}; }
+				auto max() const noexcept { return utils::oop::proxy<size, true , float, &size::set_max, &size::get_max>{*this}; }
 
-//			__declspec(property(get = get_min, put = set_min)) utils::math::vec2f min;
-//			__declspec(property(get = get_prf, put = set_prf)) utils::math::vec2f prf;
-//			__declspec(property(get = get_max, put = set_max)) utils::math::vec2f max;
-//
-//			__declspec(property(put = set_min_x)) float min_x;
-//			__declspec(property(put = set_min_y)) float min_y;
-//			__declspec(property(put = set_prf_x)) float prf_x;
-//			__declspec(property(put = set_prf_y)) float prf_y;
-//			__declspec(property(put = set_max_x)) float max_x;
-//			__declspec(property(put = set_max_y)) float max_y;
-#pragma endregion Properties
+			private:
+				inline static const std::runtime_error sizes_error{"Trying to assign invalid custom sizes. The following must be true for both x and y: _min <= _max."};
 
-		private:
-			inline static const std::runtime_error sizes_error{"Trying to assign invalid custom sizes. The following must be true for both x and y: _min <= _max."};
+				float _min{0.f                         }; //can be [0, _max]
+				float _max{utils::math::constants::finf}; //can be [_min, finf]
+				float _prf{utils::math::constants::fnan}; //can be [_min, _max] or fnan
+			};
 
-			utils::math::vec2f _min{0.f, 0.f}; //can be [0, _max]
-			utils::math::vec2f _max{utils::math::constants::finf, utils::math::constants::finf}; //can be [_min, finf]
-			utils::math::vec2f _prf{utils::math::constants::fnan, utils::math::constants::fnan}; //can be [_min, _max] or fnan
-		};
-#pragma endregion inner_types
+		class sizes
+			{
+			public:
+				using value_type = utils::math::vec2f;
+				size x;
+				size y;
 
+				sizes() = default;
+				sizes(const size& x, const size& y) : x{x}, y{y} {}
+				sizes(const value_type& min, const value_type& max) : 
+					x{min.x(), max.x()}, 
+					y{min.y(), max.y()} 
+					{}
+				sizes(const value_type& min, const value_type& prf, const value_type& max) :
+					x{min.x(), prf.x(), max.x()},
+					y{min.y(), prf.y(), max.y()}
+					{}
 
+				void set_min(const value_type& val)
+					{
+					x.set_min(val.x());
+					y.set_min(val.y());
+					}
+				void set_prf(const value_type& val)
+					{
+					x.set_prf(val.x());
+					y.set_prf(val.y());
+					}
+				void set_max(const value_type& val)
+					{
+					x.set_max(val.x());
+					y.set_max(val.y());
+					}
+
+				value_type get_prf  () const noexcept { return {x.prf(), y.prf()}; }
+				value_type get_min  () const noexcept { return {x.min(), y.min()}; }
+				value_type get_max  () const noexcept { return {x.max(), y.max()}; }
+
+				auto min()       noexcept { return utils::oop::proxy<sizes, false, value_type, &sizes::set_min, &sizes::get_min>{*this}; }
+				auto min() const noexcept { return utils::oop::proxy<sizes, true , value_type, &sizes::set_min, &sizes::get_min>{*this}; }
+				auto prf()       noexcept { return utils::oop::proxy<sizes, false, value_type, &sizes::set_prf, &sizes::get_prf>{*this}; }
+				auto prf() const noexcept { return utils::oop::proxy<sizes, true , value_type, &sizes::set_prf, &sizes::get_prf>{*this}; }
+				auto max()       noexcept { return utils::oop::proxy<sizes, false, value_type, &sizes::set_max, &sizes::get_max>{*this}; }
+				auto max() const noexcept { return utils::oop::proxy<sizes, true , value_type, &sizes::set_max, &sizes::get_max>{*this}; }
+			};
+	
+		class spacing
+			{
+			public:
+				using value_type = utils::math::rect_spacing<float>;
+
+				size ll;
+				size up;
+				size rr;
+				size dw;
+
+				spacing() = default;
+				spacing(const size& ll, const size& up, const size& rr, const size& dw) :
+					ll{ll},
+					up{up},
+					rr{rr},
+					dw{dw}
+					{}
+				spacing(const value_type& min, const value_type& max) :
+					ll{min.ll(), max.ll()},
+					up{min.up(), max.up()},
+					rr{min.rr(), max.rr()},
+					dw{min.dw(), max.dw()}
+					{}
+				spacing(const value_type& min, const value_type& prf, const value_type& max) :
+					ll{min.ll(), prf.ll(), max.ll()},
+					up{min.up(), prf.up(), max.up()},
+					rr{min.rr(), prf.rr(), max.rr()},
+					dw{min.dw(), prf.dw(), max.dw()}
+					{}
+
+				void set_min(const value_type& val)
+					{
+					ll.set_min(val.ll());
+					up.set_min(val.up());
+					rr.set_min(val.rr());
+					dw.set_min(val.dw());
+					}
+				void set_prf(const value_type& val)
+					{
+					ll.set_prf(val.ll());
+					up.set_prf(val.up());
+					rr.set_prf(val.rr());
+					dw.set_prf(val.dw());
+					}
+				void set_max(const value_type& val)
+					{
+					ll.set_max(val.ll());
+					up.set_max(val.up());
+					rr.set_max(val.rr());
+					dw.set_max(val.dw());
+					}
+
+				value_type get_prf  () const noexcept { return {ll.prf(), up.prf(), rr.prf(), dw.prf()}; }
+				value_type get_min  () const noexcept { return {ll.min(), up.min(), rr.min(), dw.min()}; }
+				value_type get_max  () const noexcept { return {ll.max(), up.max(), rr.max(), dw.max()}; }
+
+				auto min()       noexcept { return utils::oop::proxy<spacing, false, value_type, &spacing::set_min, &spacing::get_min>{*this}; }
+				auto min() const noexcept { return utils::oop::proxy<spacing, true , value_type, &spacing::set_min, &spacing::get_min>{*this}; }
+				auto prf()       noexcept { return utils::oop::proxy<spacing, false, value_type, &spacing::set_prf, &spacing::get_prf>{*this}; }
+				auto prf() const noexcept { return utils::oop::proxy<spacing, true , value_type, &spacing::set_prf, &spacing::get_prf>{*this}; }
+				auto max()       noexcept { return utils::oop::proxy<spacing, false, value_type, &spacing::set_max, &spacing::get_max>{*this}; }
+				auto max() const noexcept { return utils::oop::proxy<spacing, true , value_type, &spacing::set_max, &spacing::get_max>{*this}; }
+
+			};
+		}
 
 	namespace details
 		{
+		float filter_nan(float a, float b) noexcept
+			{
+			if (std::isnan(a)) { return b; }
+			return a;
+			}
+
+		float add_nan_aware(float a, float b) noexcept
+			{
+			if (std::isnan(a)) { return b; }
+			else if (std::isnan(b)) { return a; }
+			return a + b;
+			}
+		float max_nan_aware(float a, float b) noexcept
+			{
+			if (std::isnan(a)) { return b; }
+			else if (std::isnan(b)) { return a; }
+			return std::max(a, b);
+			}
+		float min_nan_aware(float a, float b) noexcept
+			{
+			if (std::isnan(a)) { return b; }
+			else if (std::isnan(b)) { return a; }
+			return std::min(a, b);
+			}
+
+		//Note: std::clamp throws/UBs if min > max
+		//Instead here we want to favour one
+		float clamp_favour_min(float value, float min, float max) noexcept
+			{
+			return std::max(std::min(value, max), min);
+			}
+
+		//Note: std::clamp throws/UBs if min > max
+		//Instead here we want to favour one
+		float clamp_favour_min_nan_aware(float value, float min, float max) noexcept
+			{
+			return max_nan_aware(min_nan_aware(value, max), min);
+			}
+
+
+
 		float evaluate_element_position_for_alignment_based_container
 			(
 			const utils::math::rect<float>& container_rect,
