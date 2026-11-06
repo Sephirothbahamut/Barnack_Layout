@@ -36,6 +36,6 @@ namespace barnack::layout::wrapper
 		};
 	}
 
-#ifdef barnack_layout_implementation
+#ifdef barnack_implementation
 #include "filler.cpp"
 #endif

@@ -63,7 +63,6 @@ namespace barnack::layout::wrapper
 		const float delta_y{layout::details::evaluate_element_position_for_alignment_based_container(get_rect_content(), child().get_rect_content(), slot.alignment)};
 
 		const utils::math::vec2f element_new_position{get_rect_content().x(), get_rect_content().y() + delta_y};
-
 		child().reposition(element_new_position);
 		}
 

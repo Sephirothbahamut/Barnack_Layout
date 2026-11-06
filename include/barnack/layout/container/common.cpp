@@ -24,10 +24,17 @@ namespace barnack::layout::container::details
 	with_alignment<alignment_t>::with_alignment(alignment_t default_alignment) : default_alignment{default_alignment} {}
 
 	template <typename alignment_t>
-	void with_alignment<alignment_t>::visit(const std::function<void(const element& element)>& callback) noexcept
+	bool with_alignment<alignment_t>::visit(const std::function<bool(element& element)>& callback) noexcept
 		{
-		element::visit(callback);
-		for_each_child([&](layout::element& child) { child.visit(callback); });
+		const bool ret{element::visit(callback)};
+		if (ret)
+			{
+			for_each_child([&](layout::element& child)
+				{
+				child.visit(callback);
+				});
+			}
+		return ret;
 		}
 
 	template <typename alignment_t>

@@ -18,6 +18,6 @@ namespace barnack::layout::container
 		};
 	}
 
-#ifdef barnack_layout_implementation
+#ifdef barnack_implementation
 #include "horizontal.cpp"
 #endif

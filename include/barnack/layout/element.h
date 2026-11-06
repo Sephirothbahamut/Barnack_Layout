@@ -35,30 +35,47 @@ namespace barnack::layout
 			const utils::math::rect<float>& get_rect_content() const noexcept;
 			element_obs get_parent() const noexcept;
 
-			virtual void visit(const std::function<void(const element& element)>& callback) noexcept;
+			virtual bool visit(const std::function<bool(element& element)>& callback) noexcept;
 
 			void resize_checked(const utils::math::vec2f& size);
 
 			virtual void resize    (const utils::math::vec2f& max_size);
 			virtual void reposition(const utils::math::vec2f& position) noexcept;
 
+			//Get sizes that depend on the evaluated content AND custom sizes.
 			utils::math::vec2f get_size_min() const noexcept;
+			//Get sizes that depend on the evaluated content AND custom sizes.
 			utils::math::vec2f get_size_max() const noexcept;
+			//Get sizes that depend on the evaluated content AND custom sizes.
 			utils::math::vec2f get_size_prf() const noexcept;
 
+			//Clear evaluated content sizes and invalidates cache in each parent up to the root.
 			void clear_cached_min() const noexcept;
+			//Clear evaluated content sizes and invalidates cache in each parent up to the root.
 			void clear_cached_max() const noexcept;
+			//Clear evaluated content sizes and invalidates cache in each parent up to the root.
 			void clear_cached_prf() const noexcept;
+
+			//Replace evaluated content sizes and invalidates cache in each parent up to the root.
+			void update_cached_min(const utils::math::vec2f& new_values) const noexcept;
+			//Replace evaluated content sizes and invalidates cache in each parent up to the root.
+			void update_cached_max(const utils::math::vec2f& new_values) const noexcept;
+			//Replace evaluated content sizes and invalidates cache in each parent up to the root.
+			void update_cached_prf(const utils::math::vec2f& new_values) const noexcept;
 
 			inline constexpr operator bool() const noexcept { return true; }
 
 		protected:
-
+			//Evaluate sizes depending on the content. Does NOT need to take custom sizes into account.
 			virtual utils::math::vec2f evaluate_size_min() const noexcept;
+			//Evaluate sizes depending on the content. Does NOT need to take custom sizes into account.
 			virtual utils::math::vec2f evaluate_size_max() const noexcept;
+			//Evaluate sizes depending on the content. Does NOT need to take custom sizes into account.
 			virtual utils::math::vec2f evaluate_size_prf() const noexcept;
 
 		private:
+			//Private rather than protected so child classes are forced to call the clear cache function.
+			//Writing here directly would not invalidate the size cache of parent nodes in the layout tree.
 			mutable std::optional<utils::math::vec2f> cached_min_opt;
 			mutable std::optional<utils::math::vec2f> cached_max_opt;
 			mutable std::optional<utils::math::vec2f> cached_prf_opt;
@@ -79,6 +96,6 @@ namespace barnack::layout
 	struct owner : element {};
 	}
 
-#ifdef barnack_layout_implementation
+#ifdef barnack_implementation
 #include "element.cpp"
 #endif

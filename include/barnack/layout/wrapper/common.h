@@ -18,7 +18,7 @@ namespace barnack::layout::wrapper::details
 			template <typename alignment_t>
 			with_slot_t(alignment_t alignment) requires std::same_as<slot_t, layout::slot_with_alignment<alignment_t>> : slot{alignment} {}
 
-			virtual void visit(const std::function<void(const element& element)>& callback) noexcept final override;
+			virtual bool visit(const std::function<bool(element& element)>& callback) noexcept final override;
 
 			[[nodiscard]] layout::details::slot_access_helper<slot_t> get_slot() noexcept;
 			[[nodiscard]] std::optional<layout::details::slot_access_helper<slot_t>> get_slot(const layout::element& previous_element) noexcept;
@@ -39,10 +39,11 @@ namespace barnack::layout::wrapper::details
 		{
 		public:
 			using alignment_t = alignment_T;
+			with_alignment() = default;
 			with_alignment(alignment_t alignment);
 		};
 	}
 
-#ifdef barnack_layout_implementation
+#ifdef barnack_implementation
 #include "common.cpp"
 #endif

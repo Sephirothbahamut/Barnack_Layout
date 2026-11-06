@@ -136,6 +136,6 @@ namespace barnack::layout
 		}
 	}
 
-#ifdef barnack_layout_implementation
+#ifdef barnack_implementation
 #include "base_types.cpp"
 #endif

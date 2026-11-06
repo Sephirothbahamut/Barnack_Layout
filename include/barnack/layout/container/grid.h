@@ -1,6 +1,6 @@
 #pragma once
 
 
-#ifdef barnack_layout_implementation
+#ifdef barnack_implementation
 #include "grid.cpp"
 #endif

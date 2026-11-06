@@ -87,6 +87,6 @@ namespace barnack::layout
 
 
 
-#ifdef barnack_layout_implementation
+#ifdef barnack_implementation
 #include "traversal.cpp"
 #endif

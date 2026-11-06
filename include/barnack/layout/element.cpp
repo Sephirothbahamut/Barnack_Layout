@@ -13,9 +13,9 @@ namespace barnack::layout
 	const utils::math::rect<float>& element::get_rect_content() const noexcept { return rect_content; }
 	element_obs element::get_parent() const noexcept { return parent_obs; }
 
-	void element::visit(const std::function<void(const element& element)>& callback) noexcept
+	bool element::visit(const std::function<bool(element& element)>& callback) noexcept
 		{
-		callback(*this);
+		return callback(*this);
 		}
 
 	void element::resize_checked(const utils::math::vec2f& size)
@@ -99,7 +99,10 @@ namespace barnack::layout
 	void element::clear_cached_min() const noexcept { cached_min_opt = std::nullopt; if(parent_obs) { parent_obs->clear_cached_min(); } }
 	void element::clear_cached_max() const noexcept { cached_max_opt = std::nullopt; if(parent_obs) { parent_obs->clear_cached_max(); } }
 	void element::clear_cached_prf() const noexcept { cached_prf_opt = std::nullopt; if(parent_obs) { parent_obs->clear_cached_prf(); } }
-
+	
+	void element::update_cached_min(const utils::math::vec2f& new_values) const noexcept { cached_min_opt = new_values; if(parent_obs) { parent_obs->clear_cached_min(); } }
+	void element::update_cached_max(const utils::math::vec2f& new_values) const noexcept { cached_min_opt = new_values; if(parent_obs) { parent_obs->clear_cached_max(); } }
+	void element::update_cached_prf(const utils::math::vec2f& new_values) const noexcept { cached_min_opt = new_values; if(parent_obs) { parent_obs->clear_cached_prf(); } }
 
 	utils::math::vec2f element::evaluate_size_min() const noexcept { return {  0.f,   0.f}; }
 	utils::math::vec2f element::evaluate_size_max() const noexcept { return {utils::math::constants::finf, utils::math::constants::finf}; }

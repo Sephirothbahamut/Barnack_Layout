@@ -5,6 +5,9 @@
 namespace barnack::layout
 	{
 	template <typename alignment_t>
+	slot_with_alignment<alignment_t>::slot_with_alignment() : alignment{utils::alignment::default_value<alignment_t>()} {}
+
+	template <typename alignment_t>
 	slot_with_alignment<alignment_t>::slot_with_alignment(alignment_t alignment) : alignment{alignment} {}
 
 	namespace details

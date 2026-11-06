@@ -18,6 +18,6 @@ namespace barnack::layout::wrapper
 		};
 	}
 
-#ifdef barnack_layout_implementation
+#ifdef barnack_implementation
 #include "pure.cpp"
 #endif

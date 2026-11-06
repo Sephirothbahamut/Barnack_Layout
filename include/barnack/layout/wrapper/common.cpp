@@ -3,10 +3,14 @@
 namespace barnack::layout::wrapper::details
 	{
 	template <typename slot_t>
-	void with_slot_t<slot_t>::visit(const std::function<void(const element& element)>& callback) noexcept
+	bool with_slot_t<slot_t>::visit(const std::function<bool(element& element)>& callback) noexcept
 		{
-		element::visit(callback);
-		child().visit(callback);
+		const bool ret{element::visit(callback)};
+		if (ret)
+			{
+			child().visit(callback);
+			}
+		return ret;
 		}
 
 	template <typename slot_t>
@@ -59,7 +63,7 @@ namespace barnack::layout::wrapper::details
 		{
 		child().evaluate_traversal(my_node, position);
 		}
-		
+
 	template <typename alignment_t>
 	with_alignment<alignment_t>::with_alignment(alignment_t alignment) : with_slot_t<layout::slot_with_alignment<alignment_t>>{alignment}
 		{}

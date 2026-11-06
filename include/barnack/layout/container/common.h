@@ -37,7 +37,7 @@ namespace barnack::layout::container
 				with_alignment() = default;
 				with_alignment(alignment_t default_alignment);
 
-				virtual void visit(const std::function<void(const element& element)>& callback) noexcept override;
+				virtual bool visit(const std::function<bool(element& element)>& callback) noexcept override;
 
 				[[nodiscard]] layout::details::slot_access_helper<slot_t> add_slot(alignment_t slot_alignment) noexcept;
 				[[nodiscard]] layout::details::slot_access_helper<slot_t> add_slot() noexcept;
@@ -90,6 +90,6 @@ namespace barnack::layout::container
 		}
 	}
 
-#ifdef barnack_layout_implementation
+#ifdef barnack_implementation
 #include "common.cpp"
 #endif

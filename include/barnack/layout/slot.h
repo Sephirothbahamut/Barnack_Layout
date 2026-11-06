@@ -46,6 +46,7 @@ namespace barnack::layout
 		using alignment_t = alignment_T;
 		alignment_t alignment{utils::alignment::default_value<alignment_t>()};
 
+		slot_with_alignment();
 		slot_with_alignment(alignment_t alignment);
 		};
 
@@ -94,6 +95,6 @@ namespace barnack::layout
 
 
 
-#ifdef barnack_layout_implementation
+#ifdef barnack_implementation
 #include "slot.cpp"
 #endif
