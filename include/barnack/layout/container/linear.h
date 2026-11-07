@@ -20,7 +20,6 @@ namespace barnack::layout::container
 			using parent_t::add_slot;
 			using parent_t::get_slot;
 			
-			// For each value, if set in constraints, that one is used. Otherwise, the largest max amongst children is used.
 			constraints::bidirectional constraints;
 
 			virtual utils::math::vec2f evaluate_size_min() const noexcept final override;

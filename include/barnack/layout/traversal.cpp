@@ -67,7 +67,7 @@ namespace barnack::layout
 		
 		if (needs_new_root)
 			{
-			if (root.rect_content.contains(position))
+			if (root.hit_test(position))
 				{
 				auto& newly_visited_root{_newly_visited_roots.emplace_back(node{.element_obs{std::addressof(root)}})};
 				root.evaluate_traversal_for_children(newly_visited_root, position);

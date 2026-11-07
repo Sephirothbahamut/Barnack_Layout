@@ -103,9 +103,9 @@ namespace barnack::layout
 			y.set_max(val.y());
 			}
 
-		auto bidirectional::get_prf() const noexcept -> value_type { return {x.prf(), y.prf()}; }
-		auto bidirectional::get_min() const noexcept -> value_type { return {x.min(), y.min()}; }
-		auto bidirectional::get_max() const noexcept -> value_type { return {x.max(), y.max()}; }
+		auto bidirectional::get_prf() const noexcept -> value_type { return {x.get_prf(), y.get_prf()}; }
+		auto bidirectional::get_min() const noexcept -> value_type { return {x.get_min(), y.get_min()}; }
+		auto bidirectional::get_max() const noexcept -> value_type { return {x.get_max(), y.get_max()}; }
 
 
 

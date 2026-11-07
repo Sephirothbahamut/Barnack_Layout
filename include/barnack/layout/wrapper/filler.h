@@ -6,7 +6,7 @@ namespace barnack::layout::wrapper
 	{
 	struct filler_horizontal : public details::with_alignment<utils::alignment::horizontal>
 		{
-		float max{utils::math::constants::finf};
+		constraints::monodirectional constraints;
 
 		virtual utils::math::vec2f evaluate_size_min() const noexcept final override;
 		virtual utils::math::vec2f evaluate_size_prf() const noexcept final override;
@@ -18,7 +18,7 @@ namespace barnack::layout::wrapper
 
 	struct filler_vertical : public details::with_alignment<utils::alignment::vertical>
 		{
-		float max{utils::math::constants::finf};
+		constraints::monodirectional constraints;
 
 		virtual utils::math::vec2f evaluate_size_min() const noexcept final override;
 		virtual utils::math::vec2f evaluate_size_prf() const noexcept final override;
@@ -30,7 +30,7 @@ namespace barnack::layout::wrapper
 
 	struct filler_bidirectional : public details::with_alignment<utils::alignment>
 		{
-		utils::math::vec2f max{utils::math::constants::finf, utils::math::constants::finf};
+		constraints::bidirectional constraints;
 
 		virtual utils::math::vec2f evaluate_size_min() const noexcept final override;
 		virtual utils::math::vec2f evaluate_size_prf() const noexcept final override;

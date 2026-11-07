@@ -32,6 +32,7 @@ namespace barnack::layout
 		public:
 			const utils::math::rect<float>& get_rect_content() const noexcept;
 			element_obs get_parent() const noexcept;
+			virtual bool hit_test(const utils::math::vec2f& coordinates) const noexcept;
 
 			virtual bool visit(const std::function<bool(element& element)>& callback) noexcept;
 
@@ -75,10 +76,10 @@ namespace barnack::layout
 		public:
 			virtual void evaluate_traversal_for_children(traversal& traversal, traversal::node& previously_visited_my_node, const utils::math::vec2f& position) noexcept;
 			virtual void evaluate_traversal_for_children(traversal::node& my_node, const utils::math::vec2f& position) noexcept;
-		
+
 			// Returns false if not visited and must be added to the to left roots tree
-			bool evaluate_traversal(traversal& traversal, traversal::node& previously_visited_parent_node, const utils::math::vec2f& position) noexcept;
-			void evaluate_traversal(traversal::node& newly_visited_parent_node, const utils::math::vec2f& position) noexcept;
+			bool evaluate_traversal(traversal& traversal, traversal::node& previously_visited_my_node, const utils::math::vec2f& position) noexcept;
+			void evaluate_traversal(traversal::node& my_node, const utils::math::vec2f& position) noexcept;
 		};
 
 	struct owner : element {};

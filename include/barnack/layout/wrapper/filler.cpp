@@ -2,17 +2,35 @@
 
 namespace barnack::layout::wrapper
 	{
+	//Note for future me: the evaluation pairs seems trange but make sense
+	// For min we want the maximum between the two minimums. Seems weird but it's okey. This guarantees that the custom minimum can fit the content.
+	// For prf we want the custom preferred clamped by the evaluated minimum and maximum.
+	// For max we want the maximum between the custom maximum and the content's *minimum*. Seems weird but it's okey. This guarantees that the custom maximum can fit the content.
+
 	utils::math::vec2f filler_horizontal::evaluate_size_min() const noexcept
 		{
-		return child().get_size_min();
+		return 
+			{
+			layout::details::max_nan_aware(child().get_size_min().x(), constraints.get_min()), 
+			child().get_size_min().y()
+			};
 		}
 	utils::math::vec2f filler_horizontal::evaluate_size_prf() const noexcept
 		{
-		return child().get_size_prf();
+		const auto child_prf{child().get_size_prf()};
+		return
+			{
+			std::isnan(constraints.get_prf()) ? child_prf.x() : std::clamp(constraints.get_prf(), get_size_min().x(), get_size_max().x()),
+			child_prf.y()
+			};
 		}
 	utils::math::vec2f filler_horizontal::evaluate_size_max() const noexcept
 		{
-		return {layout::details::max_nan_aware(child().get_size_min().x(), max), child().get_size_max().y()};
+		return 
+			{
+			layout::details::max_nan_aware(child().get_size_min().x(), constraints.get_max()), 
+			child().get_size_max().y()
+			};
 		}
 
 	void filler_horizontal::resize(const utils::math::vec2f& max_size) 
@@ -37,15 +55,28 @@ namespace barnack::layout::wrapper
 
 	utils::math::vec2f filler_vertical::evaluate_size_min() const noexcept
 		{
-		return child().get_size_min();
+		return
+			{
+			child().get_size_min().x(),
+			layout::details::max_nan_aware(child().get_size_min().y(), constraints.get_min())
+			};
 		}
 	utils::math::vec2f filler_vertical::evaluate_size_prf() const noexcept
 		{
-		return child().get_size_prf();
+		const auto child_prf{child().get_size_prf()};
+		return
+			{
+			child_prf.y(),
+			std::isnan(constraints.get_prf()) ? child_prf.y() : std::clamp(constraints.get_prf(), get_size_min().y(), get_size_max().y())
+			};
 		}
 	utils::math::vec2f filler_vertical::evaluate_size_max() const noexcept
 		{
-		return {child().get_size_max().x(), layout::details::max_nan_aware(child().get_size_min().y(), max)};
+		return
+			{
+			child().get_size_max().x(),
+			layout::details::max_nan_aware(child().get_size_min().y(), constraints.get_max())
+			};
 		}
 
 	void filler_vertical::resize(const utils::math::vec2f& max_size) 
@@ -68,15 +99,15 @@ namespace barnack::layout::wrapper
 
 	utils::math::vec2f filler_bidirectional::evaluate_size_min() const noexcept
 		{
-		return child().get_size_min();
+		return layout::details::max_nan_aware(child().get_size_min(), constraints.get_min());
 		}
 	utils::math::vec2f filler_bidirectional::evaluate_size_prf() const noexcept
 		{
-		return child().get_size_prf();
+		return layout::details::max_nan_aware(child().get_size_prf(), constraints.get_prf());
 		}
 	utils::math::vec2f filler_bidirectional::evaluate_size_max() const noexcept
 		{
-		return layout::details::max_nan_aware(child().get_size_min(), max);
+		return layout::details::max_nan_aware(child().get_size_min(), constraints.get_max());
 		}
 
 	void filler_bidirectional::resize(const utils::math::vec2f& max_size) 

@@ -13,6 +13,8 @@ namespace barnack::layout
 	const utils::math::rect<float>& element::get_rect_content() const noexcept { return rect_content; }
 	element_obs element::get_parent() const noexcept { return parent_obs; }
 
+	bool element::hit_test(const utils::math::vec2f& coordinates) const noexcept { return rect_content.contains(coordinates); }
+
 	bool element::visit(const std::function<bool(element& element)>& callback) noexcept
 		{
 		return callback(*this);
@@ -94,7 +96,7 @@ namespace barnack::layout
 		
 	bool element::evaluate_traversal(traversal& traversal, traversal::node& previously_visited_parent_node, const utils::math::vec2f& position) noexcept
 		{
-		if (rect_content.contains(position))
+		if (hit_test(position))
 			{
 			const auto it{std::find_if(previously_visited_parent_node.children.begin(), previously_visited_parent_node.children.end(), [this](const traversal::node& node) { return node.element_obs == this; })};
 			if (it != previously_visited_parent_node.children.end()) //I was previously visited
@@ -115,7 +117,7 @@ namespace barnack::layout
 
 	void element::evaluate_traversal(traversal::node& newly_visited_parent_node, const utils::math::vec2f& position) noexcept
 		{
-		if (rect_content.contains(position))
+		if (hit_test(position))
 			{
 			auto& my_node{newly_visited_parent_node.children.emplace_back(traversal::node{.element_obs{this}})};
 			evaluate_traversal_for_children(my_node, position);
