@@ -1,96 +1,115 @@
 #include "base_types.h"
 
+inline static const std::runtime_error sizes_error{"Trying to assign invalid custom sizes. The following must be true for both x and y: _min <= _max."};
+
 namespace barnack::layout
 	{
-	namespace custom
+	namespace constraints
 		{
-		size::size(const float _min, const float _max)
+		bool monodirectional::unchecked::validate        () const noexcept { return validate        (min, prf, max); }
+		bool monodirectional::unchecked::validate_min_max() const noexcept { return validate_min_max(min, max     ); }
+		bool monodirectional::unchecked::validate_min_prf() const noexcept { return validate_min_prf(min, prf     ); }
+		bool monodirectional::unchecked::validate_max_prf() const noexcept { return validate_max_prf(max, prf     ); }
+
+		bool monodirectional::unchecked::validate(const float min, const float prf, float max) noexcept
 			{
-			if (_min > _max) 
-				{
-				throw sizes_error; 
-				}
-			this->_min = _min;
-			this->_max = _max;
+			return validate_min_max(min, max) && validate_min_prf(min, prf) && validate_max_prf(max, prf);
 			}
-		size::size(const float _min, const float _prf, float _max)
+		bool monodirectional::unchecked::validate_min_max(float min, float max) noexcept
 			{
-			if ((_min > _max) || (_prf < _min) || (_prf > _max)) 
-				{
-				throw sizes_error; 
-				}
-			this->_min = _min;
-			this->_max = _max;
-			this->_prf = _prf;
+			const bool both_valid{!std::isnan(min) && !std::isnan(max)};
+			return !(both_valid && (min > max));
+			}
+		bool monodirectional::unchecked::validate_min_prf(float min, float prf) noexcept
+			{
+			const bool both_valid{!std::isnan(min) && !std::isnan(prf)};
+			return !(both_valid && (min > prf));
+			}
+		bool monodirectional::unchecked::validate_max_prf(float max, float prf) noexcept
+			{
+			const bool both_valid{!std::isnan(max) && !std::isnan(prf)};
+			return !(both_valid && (prf > max));
 			}
 
-		void size::set_min(const float val)
+		monodirectional::monodirectional(const float _min, const float _max) : values{.min{_min}, .max{_max}}
 			{
-			if ((!std::isnan(_prf) && val > _prf) || (val > _max))
+			if (!values.validate_min_max())
+				{
+				throw sizes_error; 
+				}
+			}
+		monodirectional::monodirectional(const float _min, const float _prf, float _max) : values{.min{_min}, .prf{_prf}, .max{_max}}
+			{
+			if (!values.validate())
 				{
 				throw sizes_error;
 				}
-			_min = val;
-			_max = std::max(_max, _min);
 			}
 
-		void size::set_prf(const float val)
+		void monodirectional::set_min(const float val)
 			{
-			if (val < _min || val > _max) 
-				{
-				throw sizes_error; 
-				}
-			_prf = val;
-			}
-
-		void size::set_max(const float& val)
-			{
-			if ((!std::isnan(_prf) && val < _prf) || (val < _min))
+			if (!unchecked::validate_min_max(val, values.max) || !unchecked::validate_min_prf(val, values.prf))
 				{
 				throw sizes_error;
 				}
-			_max = val;
-			_min = std::min(_min, _max);
+			values.min = val;
 			}
 
-		float size::get_prf() const noexcept { return _prf; }
-		float size::get_min() const noexcept { return _min; }
-		float size::get_max() const noexcept { return _max; }
+		void monodirectional::set_prf(const float val)
+			{
+			if (!unchecked::validate_min_prf(values.min, val) || !unchecked::validate_max_prf(values.max, val))
+				{
+				throw sizes_error;
+				}
+			values.prf = val;
+			}
 
+		void monodirectional::set_max(const float& val)
+			{
+			if (!unchecked::validate_min_max(values.min, val) || !unchecked::validate_max_prf(val, values.prf))
+				{
+				throw sizes_error;
+				}
+			values.max = val;
+			}
 
-		sizes::sizes(const size& x, const size& y) : x{x}, y{y} {}
-		sizes::sizes(const value_type& min, const value_type& max) :
+		float monodirectional::get_min() const noexcept { return values.min; }
+		float monodirectional::get_prf() const noexcept { return values.prf; }
+		float monodirectional::get_max() const noexcept { return values.max; }
+
+		bidirectional::bidirectional(const monodirectional& x, const monodirectional& y) : x{x}, y{y} {}
+		bidirectional::bidirectional(const value_type& min, const value_type& max) :
 			x{min.x(), max.x()}, 
 			y{min.y(), max.y()} 
 			{}
-		sizes::sizes(const value_type& min, const value_type& prf, const value_type& max) :
+		bidirectional::bidirectional(const value_type& min, const value_type& prf, const value_type& max) :
 			x{min.x(), prf.x(), max.x()},
 			y{min.y(), prf.y(), max.y()}
 			{}
 
-		void sizes::set_min(const value_type& val)
+		void bidirectional::set_min(const value_type& val)
 			{
 			x.set_min(val.x());
 			y.set_min(val.y());
 			}
-		void sizes::set_prf(const value_type& val)
+		void bidirectional::set_prf(const value_type& val)
 			{
 			x.set_prf(val.x());
 			y.set_prf(val.y());
 			}
-		void sizes::set_max(const value_type& val)
+		void bidirectional::set_max(const value_type& val)
 			{
 			x.set_max(val.x());
 			y.set_max(val.y());
 			}
 
-		auto sizes::get_prf() const noexcept -> value_type { return {x.prf(), y.prf()}; }
-		auto sizes::get_min() const noexcept -> value_type { return {x.min(), y.min()}; }
-		auto sizes::get_max() const noexcept -> value_type { return {x.max(), y.max()}; }
+		auto bidirectional::get_prf() const noexcept -> value_type { return {x.prf(), y.prf()}; }
+		auto bidirectional::get_min() const noexcept -> value_type { return {x.min(), y.min()}; }
+		auto bidirectional::get_max() const noexcept -> value_type { return {x.max(), y.max()}; }
 
 
 
-		spacing::spacing(const size& ll, const size& up, const size& rr, const size& dw) :
+		spacing::spacing(const monodirectional& ll, const monodirectional& up, const monodirectional& rr, const monodirectional& dw) :
 			ll{ll},
 			up{up},
 			rr{rr},
@@ -143,7 +162,6 @@ namespace barnack::layout
 			if (std::isnan(a)) { return b; }
 			return a;
 			}
-
 		float add_nan_aware(float a, float b) noexcept
 			{
 			if (std::isnan(a)) { return b; }
@@ -162,6 +180,36 @@ namespace barnack::layout
 			else if (std::isnan(b)) { return a; }
 			return std::min(a, b);
 			}
+		float avg_nan_aware(float a, float b) noexcept
+			{
+			if (std::isnan(a)) { return b; }
+			else if (std::isnan(b)) { return a; }
+			return (a + b) / 2.f;
+			}
+
+		utils::math::vec2f filter_nan(const utils::math::vec2f& a, const utils::math::vec2f& b) noexcept
+			{
+			return a.operator_to_new(b, [](const auto& a, const auto& b) { return layout::details::filter_nan(a, b); });;
+			}
+		utils::math::vec2f add_nan_aware(const utils::math::vec2f& a, const utils::math::vec2f& b) noexcept
+			{
+			return a.operator_to_new(b, [](const auto& a, const auto& b) { return layout::details::add_nan_aware(a, b); });;
+			}
+		utils::math::vec2f max_nan_aware(const utils::math::vec2f& a, const utils::math::vec2f& b) noexcept
+			{
+			return a.operator_to_new(b, [](const auto& a, const auto& b) { return layout::details::max_nan_aware(a, b); });;
+			}
+		utils::math::vec2f min_nan_aware(const utils::math::vec2f& a, const utils::math::vec2f& b) noexcept
+			{
+			return a.operator_to_new(b, [](const auto& a, const auto& b) { return layout::details::min_nan_aware(a, b); });;
+			}
+		utils::math::vec2f avg_nan_aware(const utils::math::vec2f& a, const utils::math::vec2f& b) noexcept
+			{
+			return a.operator_to_new(b, [](const auto& a, const auto& b) { return layout::details::avg_nan_aware(a, b); });;
+			}
+
+
+
 
 		//Note: std::clamp throws/UBs if min > max
 		//Instead here we want to favour one

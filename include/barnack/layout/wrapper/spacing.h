@@ -26,10 +26,10 @@ namespace barnack::layout::wrapper
 	//	{
 	//	public:
 	//		spacing() = default;
-	//		spacing(custom::size custom_spacing) noexcept;
-	//		spacing(custom::spacing custom_spacing) noexcept;
+	//		spacing(constraints::constraints custom_spacing) noexcept;
+	//		spacing(constraints::spacing custom_spacing) noexcept;
 	//
-	//		custom::spacing custom_spacing;
+	//		constraints::spacing custom_spacing;
 	//
 	//		virtual utils::math::vec2f evaluate_size_min() const noexcept final override;
 	//		virtual utils::math::vec2f evaluate_size_prf() const noexcept final override;

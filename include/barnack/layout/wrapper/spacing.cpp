@@ -22,6 +22,6 @@ namespace barnack::layout::wrapper
 		child().reposition(get_rect_content().position() + utils::math::vec2f{spacing.ll(), spacing.up()});
 		}
 
-	//spacing::spacing(custom::size    custom_spacing) noexcept : custom_spacing{custom_spacing, custom_spacing, custom_spacing, custom_spacing} {}
-	//spacing::spacing(custom::spacing custom_spacing) noexcept : custom_spacing{custom_spacing} {}
+	//spacing::spacing(constraints::constraints    custom_spacing) noexcept : custom_spacing{custom_spacing, custom_spacing, custom_spacing, custom_spacing} {}
+	//spacing::spacing(constraints::spacing custom_spacing) noexcept : custom_spacing{custom_spacing} {}
 	}

@@ -12,7 +12,7 @@ namespace barnack::layout::wrapper
 		}
 	utils::math::vec2f filler_horizontal::evaluate_size_max() const noexcept
 		{
-		return {utils::math::constants::finf, child().get_size_max().y()};
+		return {layout::details::max_nan_aware(child().get_size_min().x(), max), child().get_size_max().y()};
 		}
 
 	void filler_horizontal::resize(const utils::math::vec2f& max_size) 
@@ -45,7 +45,7 @@ namespace barnack::layout::wrapper
 		}
 	utils::math::vec2f filler_vertical::evaluate_size_max() const noexcept
 		{
-		return {child().get_size_max().x(), utils::math::constants::finf};
+		return {child().get_size_max().x(), layout::details::max_nan_aware(child().get_size_min().y(), max)};
 		}
 
 	void filler_vertical::resize(const utils::math::vec2f& max_size) 
@@ -76,7 +76,7 @@ namespace barnack::layout::wrapper
 		}
 	utils::math::vec2f filler_bidirectional::evaluate_size_max() const noexcept
 		{
-		return {utils::math::constants::finf, utils::math::constants::finf};
+		return layout::details::max_nan_aware(child().get_size_min(), max);
 		}
 
 	void filler_bidirectional::resize(const utils::math::vec2f& max_size) 

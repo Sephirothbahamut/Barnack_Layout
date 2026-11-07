@@ -25,8 +25,6 @@ namespace barnack::layout
 			template <std::derived_from<slot> slot_T>
 			friend class layout::details::slot_access_helper;
 
-			custom::sizes custom_sizes;
-
 		private:
 			utils::math::rect<float> rect_content{0.f, 0.f, 0.f, 0.f};
 			element_obs parent_obs;
@@ -42,47 +40,37 @@ namespace barnack::layout
 			virtual void resize    (const utils::math::vec2f& max_size);
 			virtual void reposition(const utils::math::vec2f& position) noexcept;
 
-			//Get sizes that depend on the evaluated content AND custom sizes.
 			utils::math::vec2f get_size_min() const noexcept;
-			//Get sizes that depend on the evaluated content AND custom sizes.
-			utils::math::vec2f get_size_max() const noexcept;
-			//Get sizes that depend on the evaluated content AND custom sizes.
 			utils::math::vec2f get_size_prf() const noexcept;
+			utils::math::vec2f get_size_max() const noexcept;
 
 			//Clear evaluated content sizes and invalidates cache in each parent up to the root.
 			void clear_cached_min() const noexcept;
 			//Clear evaluated content sizes and invalidates cache in each parent up to the root.
-			void clear_cached_max() const noexcept;
-			//Clear evaluated content sizes and invalidates cache in each parent up to the root.
 			void clear_cached_prf() const noexcept;
-
-			//Replace evaluated content sizes and invalidates cache in each parent up to the root.
-			void update_cached_min(const utils::math::vec2f& new_values) const noexcept;
-			//Replace evaluated content sizes and invalidates cache in each parent up to the root.
-			void update_cached_max(const utils::math::vec2f& new_values) const noexcept;
-			//Replace evaluated content sizes and invalidates cache in each parent up to the root.
-			void update_cached_prf(const utils::math::vec2f& new_values) const noexcept;
+			//Clear evaluated content sizes and invalidates cache in each parent up to the root.
+			void clear_cached_max() const noexcept;
 
 			inline constexpr operator bool() const noexcept { return true; }
 
 		protected:
-			//Evaluate sizes depending on the content. Does NOT need to take custom sizes into account.
+			//Replace evaluated content sizes and invalidates cache in each parent up to the root.
+			void update_cached_min(const utils::math::vec2f& new_values) const noexcept;
+			//Replace evaluated content sizes and invalidates cache in each parent up to the root.
+			void update_cached_prf(const utils::math::vec2f& new_values) const noexcept;
+			//Replace evaluated content sizes and invalidates cache in each parent up to the root.
+			void update_cached_max(const utils::math::vec2f& new_values) const noexcept;
+
 			virtual utils::math::vec2f evaluate_size_min() const noexcept;
-			//Evaluate sizes depending on the content. Does NOT need to take custom sizes into account.
-			virtual utils::math::vec2f evaluate_size_max() const noexcept;
-			//Evaluate sizes depending on the content. Does NOT need to take custom sizes into account.
 			virtual utils::math::vec2f evaluate_size_prf() const noexcept;
+			virtual utils::math::vec2f evaluate_size_max() const noexcept;
 
 		private:
 			//Private rather than protected so child classes are forced to call the clear cache function.
 			//Writing here directly would not invalidate the size cache of parent nodes in the layout tree.
 			mutable std::optional<utils::math::vec2f> cached_min_opt;
-			mutable std::optional<utils::math::vec2f> cached_max_opt;
 			mutable std::optional<utils::math::vec2f> cached_prf_opt;
-
-			utils::math::vec2f get_cached_or_evaluate_size_min() const noexcept;
-			utils::math::vec2f get_cached_or_evaluate_size_max() const noexcept;
-			utils::math::vec2f get_cached_or_evaluate_size_prf() const noexcept;
+			mutable std::optional<utils::math::vec2f> cached_max_opt;
 
 		public:
 			virtual void evaluate_traversal_for_children(traversal& traversal, traversal::node& previously_visited_my_node, const utils::math::vec2f& position) noexcept;

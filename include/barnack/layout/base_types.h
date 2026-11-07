@@ -9,14 +9,29 @@
 
 namespace barnack::layout
 	{
-	namespace custom
+	namespace constraints
 		{
-		class size
+		class monodirectional
 			{
 			public:
-				size() = default;
-				size(const float _min, const float _max);
-				size(const float _min, const float _prf, float _max);
+				struct unchecked
+					{
+					float min{utils::math::constants::fnan}; //can be [   0, _max] or fnan
+					float prf{utils::math::constants::fnan}; //can be [_min, finf] or fnan
+					float max{utils::math::constants::fnan}; //can be [_min, _max] or fnan
+					bool validate() const noexcept;
+					bool validate_min_max() const noexcept;
+					bool validate_min_prf() const noexcept;
+					bool validate_max_prf() const noexcept;
+					static bool validate(const float min, const float prf, float max) noexcept;
+					static bool validate_min_max(float min, float max) noexcept;
+					static bool validate_min_prf(float min, float prf) noexcept;
+					static bool validate_max_prf(float max, float prf) noexcept;
+					};
+
+				monodirectional() = default;
+				monodirectional(const float _min, const float _max);
+				monodirectional(const float _min, const float _prf, float _max);
 
 				/// <summary> Must be [0.f, max()]</summary>
 				void set_min(const float val);
@@ -25,51 +40,47 @@ namespace barnack::layout
 				/// <summary> Must be [min(), finf]</summary>
 				void set_max(const float& val);
 
-				float get_prf() const noexcept;
-				float get_min() const noexcept;
-				float get_max() const noexcept;
+				[[nodiscard]] float get_min() const noexcept;
+				[[nodiscard]] float get_prf() const noexcept;
+				[[nodiscard]] float get_max() const noexcept;
 
-				inline auto min()       noexcept { return utils::oop::proxy<size, false, float, &size::set_min, &size::get_min>{*this}; }
-				inline auto min() const noexcept { return utils::oop::proxy<size, true , float, &size::set_min, &size::get_min>{*this}; }
-				inline auto prf()       noexcept { return utils::oop::proxy<size, false, float, &size::set_prf, &size::get_prf>{*this}; }
-				inline auto prf() const noexcept { return utils::oop::proxy<size, true , float, &size::set_prf, &size::get_prf>{*this}; }
-				inline auto max()       noexcept { return utils::oop::proxy<size, false, float, &size::set_max, &size::get_max>{*this}; }
-				inline auto max() const noexcept { return utils::oop::proxy<size, true , float, &size::set_max, &size::get_max>{*this}; }
+				inline auto min()       noexcept { return utils::oop::proxy<monodirectional, false, float, &monodirectional::set_min, &monodirectional::get_min>{*this}; }
+				inline auto min() const noexcept { return utils::oop::proxy<monodirectional, true , float, &monodirectional::set_min, &monodirectional::get_min>{*this}; }
+				inline auto prf()       noexcept { return utils::oop::proxy<monodirectional, false, float, &monodirectional::set_prf, &monodirectional::get_prf>{*this}; }
+				inline auto prf() const noexcept { return utils::oop::proxy<monodirectional, true , float, &monodirectional::set_prf, &monodirectional::get_prf>{*this}; }
+				inline auto max()       noexcept { return utils::oop::proxy<monodirectional, false, float, &monodirectional::set_max, &monodirectional::get_max>{*this}; }
+				inline auto max() const noexcept { return utils::oop::proxy<monodirectional, true , float, &monodirectional::set_max, &monodirectional::get_max>{*this}; }
 
 			private:
-				inline static const std::runtime_error sizes_error{"Trying to assign invalid custom sizes. The following must be true for both x and y: _min <= _max."};
-
-				float _min{0.f                         }; //can be [0, _max]
-				float _max{utils::math::constants::finf}; //can be [_min, finf]
-				float _prf{utils::math::constants::fnan}; //can be [_min, _max] or fnan
+				unchecked values;
 			};
 
-		class sizes
+		class bidirectional
 			{
 			public:
 				using value_type = utils::math::vec2f;
-				size x;
-				size y;
+				monodirectional x;
+				monodirectional y;
 
-				sizes() = default;
-				sizes(const size& x, const size& y);
-				sizes(const value_type& min, const value_type& max);
-				sizes(const value_type& min, const value_type& prf, const value_type& max);
+				bidirectional() = default;
+				bidirectional(const monodirectional& x, const monodirectional& y);
+				bidirectional(const value_type& min, const value_type& max);
+				bidirectional(const value_type& min, const value_type& prf, const value_type& max);
 
 				void set_min(const value_type& val);
 				void set_prf(const value_type& val);
 				void set_max(const value_type& val);
 
-				value_type get_prf() const noexcept;
-				value_type get_min() const noexcept;
-				value_type get_max() const noexcept;
+				[[nodiscard]] value_type get_prf() const noexcept;
+				[[nodiscard]] value_type get_min() const noexcept;
+				[[nodiscard]] value_type get_max() const noexcept;
 
-				inline auto min()       noexcept { return utils::oop::proxy<sizes, false, value_type, &sizes::set_min, &sizes::get_min>{*this}; }
-				inline auto min() const noexcept { return utils::oop::proxy<sizes, true , value_type, &sizes::set_min, &sizes::get_min>{*this}; }
-				inline auto prf()       noexcept { return utils::oop::proxy<sizes, false, value_type, &sizes::set_prf, &sizes::get_prf>{*this}; }
-				inline auto prf() const noexcept { return utils::oop::proxy<sizes, true , value_type, &sizes::set_prf, &sizes::get_prf>{*this}; }
-				inline auto max()       noexcept { return utils::oop::proxy<sizes, false, value_type, &sizes::set_max, &sizes::get_max>{*this}; }
-				inline auto max() const noexcept { return utils::oop::proxy<sizes, true , value_type, &sizes::set_max, &sizes::get_max>{*this}; }
+				inline auto min()       noexcept { return utils::oop::proxy<bidirectional, false, value_type, &bidirectional::set_min, &bidirectional::get_min>{*this}; }
+				inline auto min() const noexcept { return utils::oop::proxy<bidirectional, true , value_type, &bidirectional::set_min, &bidirectional::get_min>{*this}; }
+				inline auto prf()       noexcept { return utils::oop::proxy<bidirectional, false, value_type, &bidirectional::set_prf, &bidirectional::get_prf>{*this}; }
+				inline auto prf() const noexcept { return utils::oop::proxy<bidirectional, true , value_type, &bidirectional::set_prf, &bidirectional::get_prf>{*this}; }
+				inline auto max()       noexcept { return utils::oop::proxy<bidirectional, false, value_type, &bidirectional::set_max, &bidirectional::get_max>{*this}; }
+				inline auto max() const noexcept { return utils::oop::proxy<bidirectional, true , value_type, &bidirectional::set_max, &bidirectional::get_max>{*this}; }
 			};
 	
 		class spacing
@@ -77,13 +88,13 @@ namespace barnack::layout
 			public:
 				using value_type = utils::math::rect_spacing<float>;
 
-				size ll;
-				size up;
-				size rr;
-				size dw;
+				monodirectional ll;
+				monodirectional up;
+				monodirectional rr;
+				monodirectional dw;
 
 				spacing() = default;
-				spacing(const size& ll, const size& up, const size& rr, const size& dw);
+				spacing(const monodirectional& ll, const monodirectional& up, const monodirectional& rr, const monodirectional& dw);
 				spacing(const value_type& min, const value_type& max);
 				spacing(const value_type& min, const value_type& prf, const value_type& max);
 
@@ -91,9 +102,9 @@ namespace barnack::layout
 				void set_prf(const value_type& val);
 				void set_max(const value_type& val);
 
-				value_type get_prf() const noexcept;
-				value_type get_min() const noexcept;
-				value_type get_max() const noexcept;
+				[[nodiscard]] value_type get_prf() const noexcept;
+				[[nodiscard]] value_type get_min() const noexcept;
+				[[nodiscard]] value_type get_max() const noexcept;
 
 				inline auto min()       noexcept { return utils::oop::proxy<spacing, false, value_type, &spacing::set_min, &spacing::get_min>{*this}; }
 				inline auto min() const noexcept { return utils::oop::proxy<spacing, true , value_type, &spacing::set_min, &spacing::get_min>{*this}; }
@@ -106,11 +117,18 @@ namespace barnack::layout
 
 	namespace details
 		{
-		float filter_nan(float a, float b) noexcept;
-
+		float filter_nan   (float a, float b) noexcept;
 		float add_nan_aware(float a, float b) noexcept;
 		float max_nan_aware(float a, float b) noexcept;
 		float min_nan_aware(float a, float b) noexcept;
+		float avg_nan_aware(float a, float b) noexcept;
+
+		utils::math::vec2f filter_nan   (const utils::math::vec2f& a, const utils::math::vec2f& b) noexcept;
+		utils::math::vec2f add_nan_aware(const utils::math::vec2f& a, const utils::math::vec2f& b) noexcept;
+		utils::math::vec2f max_nan_aware(const utils::math::vec2f& a, const utils::math::vec2f& b) noexcept;
+		utils::math::vec2f min_nan_aware(const utils::math::vec2f& a, const utils::math::vec2f& b) noexcept;
+		utils::math::vec2f avg_nan_aware(const utils::math::vec2f& a, const utils::math::vec2f& b) noexcept;
+
 
 		//Note: std::clamp throws/UBs if min > max
 		//Instead here we want to favour one
